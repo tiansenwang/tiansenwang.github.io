@@ -1,0 +1,674 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="wts">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="序言8月1日该票务平台突然更新了，增加了 wasm (即: WebAssembly)，其实写稿当天发现又更新了，于是边写稿，边盘它。 发现问题通过查看脚本运行日志，发现是在占座请求接口增加了两个参数而且增加了反调试，如下图。  经过一番检索后，顺利通过了反调试，成功抓取了占座请求接口  抓包后发现增加了，val(get) 和 dataString(post)，这两个参数应该是通过了某种方式进行了加">
+<meta property="og:type" content="article">
+<meta property="og:title" content="关于某票务平台-爬虫-2">
+<meta property="og:url" content="https://tiansenwang.github.io/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/index.html">
+<meta property="og:site_name" content="博客">
+<meta property="og:description" content="序言8月1日该票务平台突然更新了，增加了 wasm (即: WebAssembly)，其实写稿当天发现又更新了，于是边写稿，边盘它。 发现问题通过查看脚本运行日志，发现是在占座请求接口增加了两个参数而且增加了反调试，如下图。  经过一番检索后，顺利通过了反调试，成功抓取了占座请求接口  抓包后发现增加了，val(get) 和 dataString(post)，这两个参数应该是通过了某种方式进行了加">
+<meta property="og:locale" content="zh_CN">
+<meta property="og:image" content="https://tiansenwang.github.io/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image.png">
+<meta property="og:image" content="https://tiansenwang.github.io/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image-1.png">
+<meta property="og:image" content="https://tiansenwang.github.io/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image-2.png">
+<meta property="og:image" content="https://tiansenwang.github.io/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image-3.png">
+<meta property="og:image" content="https://tiansenwang.github.io/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image-4.png">
+<meta property="article:published_time" content="2024-08-24T21:44:36.000Z">
+<meta property="article:modified_time" content="2024-08-28T23:17:46.651Z">
+<meta property="article:author" content="wts">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://tiansenwang.github.io/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image.png">
+  
+  
+  <title>关于某票务平台-爬虫-2 - 博客</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1749284_hj8rtnfg7um.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/font_1736178_lbnruvf0jn.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    var CONFIG = {"hostname":"tiansenwang.github.io","root":"/","version":"1.8.14","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"baidu":null,"google":null,"gtag":null,"tencent":{"sid":null,"cid":null},"woyaola":null,"cnzz":null,"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false}},"search_path":"/local-search.xml"};
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+
+  
+<meta name="generator" content="Hexo 6.1.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/">
+                <i class="iconfont icon-home-fill"></i>
+                首页
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/">
+                <i class="iconfont icon-archive-fill"></i>
+                归档
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/">
+                <i class="iconfont icon-category-fill"></i>
+                分类
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/">
+                <i class="iconfont icon-tags-fill"></i>
+                标签
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/">
+                <i class="iconfont icon-user-fill"></i>
+                关于
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              &nbsp;<i class="iconfont icon-search"></i>&nbsp;
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">&nbsp;<i
+                class="iconfont icon-dark" id="color-toggle-icon"></i>&nbsp;</a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="关于某票务平台-爬虫-2"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2024-08-25 05:44" pubdate>
+          2024年8月25日 凌晨
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          42 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <!-- SEO header -->
+            <h1 style="display: none">关于某票务平台-爬虫-2</h1>
+            
+            <div class="markdown-body">
+              
+              <h2 id="序言"><a href="#序言" class="headerlink" title="序言"></a>序言</h2><p>8月1日该票务平台突然更新了，增加了 wasm (即: WebAssembly)，其实写稿当天发现又更新了，于是边写稿，边盘它。</p>
+<h2 id="发现问题"><a href="#发现问题" class="headerlink" title="发现问题"></a>发现问题</h2><p>通过查看脚本运行日志，发现是在占座请求接口增加了两个参数而且增加了反调试，如下图。</p>
+<p><img src="/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image.png" srcset="/img/loading.gif" lazyload alt="反调试"></p>
+<p>经过一番检索后，顺利通过了反调试，成功抓取了占座请求接口</p>
+<p><img src="/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image-1.png" srcset="/img/loading.gif" lazyload alt="占座请求接口"></p>
+<p>抓包后发现增加了，val(get) 和 dataString(post)，这两个参数应该是通过了某种方式进行了加密。</p>
+<h2 id="进行中"><a href="#进行中" class="headerlink" title="进行中"></a>进行中</h2><p>老办法，通过启动器看看调用了哪些函数。</p>
+<p><img src="/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image-2.png" srcset="/img/loading.gif" lazyload alt="启动器"></p>
+<p>秘密应该就在 seating-addone.js 中的 purchase() 函数的 49 行附近中</p>
+<p><img src="/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image-3.png" srcset="/img/loading.gif" lazyload alt="purchase函数截图"></p>
+<p>然而滑到 49 行附近，发现后面的js代码都进行了混淆</p>
+<p><img src="/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/image-4.png" srcset="/img/loading.gif" lazyload alt="purchase 混淆截图"></p>
+<p>于是尝试一下反混淆，这里推荐一个反混淆工具js-deobfuscator: <a target="_blank" rel="noopener" href="https://github.com/kuizuo/js-deobfuscator">https://github.com/kuizuo/js-deobfuscator</a></p>
+<p>经过反混淆后，简单浏览一下。找到关键的加密过程如下</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><code class="hljs javaScript"><span class="hljs-keyword">var</span> length = <span class="hljs-number">32</span>;<br><span class="hljs-keyword">var</span> hash_ptr = <span class="hljs-title class_">Module</span>.<span class="hljs-title function_">_malloc</span>(length);<br><span class="hljs-keyword">var</span> length2 = <span class="hljs-number">48</span>;<br><span class="hljs-keyword">var</span> ciphertext_ptr = <span class="hljs-title class_">Module</span>.<span class="hljs-title function_">_malloc</span>(length2);<br><span class="hljs-title class_">Module</span>.<span class="hljs-title function_">ccall</span>(<span class="hljs-string">&quot;gen&quot;</span>, <span class="hljs-string">&quot;void&quot;</span>, [<span class="hljs-string">&quot;string&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, <span class="hljs-string">&quot;string&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, <span class="hljs-string">&quot;string&quot;</span>], [payloadString, hash_ptr, eStr2, ciphertext_ptr, length2, <span class="hljs-variable language_">document</span>.<span class="hljs-property">cookie</span>]);<br><span class="hljs-keyword">var</span> hashtext_array = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint8Array</span>(<span class="hljs-title class_">Module</span>.<span class="hljs-property">HEAP8</span>.<span class="hljs-property">buffer</span>, hash_ptr, length);<br>hashValue = <span class="hljs-title function_">array2hex</span>(hashtext_array);<br><span class="hljs-title class_">Module</span>.<span class="hljs-title function_">_free</span>(hash_ptr);<br><span class="hljs-keyword">var</span> ciphertext_array = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint8Array</span>(<span class="hljs-title class_">Module</span>.<span class="hljs-property">HEAP8</span>.<span class="hljs-property">buffer</span>, ciphertext_ptr, length2);<br><span class="hljs-keyword">let</span> ciphertext = <span class="hljs-title function_">array2hex</span>(ciphertext_array);<br><span class="hljs-title class_">Module</span>.<span class="hljs-title function_">_free</span>(ciphertext_array);<br>payload.<span class="hljs-property">dataString</span> = ciphertext;<br>holdSeatUrl = holdSeatUrl + <span class="hljs-string">&quot;?val=&quot;</span> + hashValue + <span class="hljs-string">&quot;&amp;_=&quot;</span> + timestamp;<br></code></pre></td></tr></table></figure>
+
+<p>于是这段关键加密过程中，hashValue 以及 ciphertext 就分别对应 val 和 dataString 。<br>然后经过本地的 node 环境和命令调试一番提示 Module 没有定义。而且更新后在 Dev tools 中 控制器 调试输出是没办法输出的。</p>
+<p>一番折腾下，发现这个 Module 在其他的js中进行了加载，即 seating.js，而且这个 seating.js 中对 seating.wasm 进行了加载读取。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><code class="hljs javaScript"><span class="hljs-comment">// 对 Module 定义</span><br><span class="hljs-keyword">var</span> <span class="hljs-title class_">Module</span> = <span class="hljs-keyword">typeof</span> <span class="hljs-title class_">Module</span> != <span class="hljs-string">&quot;undefined&quot;</span> ? <span class="hljs-title class_">Module</span> : &#123;&#125;;<br><span class="hljs-comment">/** 省略部分js code */</span><br>wasmBinaryFile = <span class="hljs-string">&quot;seating.wasm&quot;</span>;<br></code></pre></td></tr></table></figure>
+
+<p>即：seating.wasm为第三方文件(后经了解为 wasm 文件), seating.js负责加载wasm文件以及定义 Module, seating-addone.js负责发送占座请求(即: purchase 函数)<br>也就是说，其实我在本地调试的时候在 seating.js 中加入加密过程就可以直接得到密文。</p>
+<p>于是又在本地调试了一番，发现本地调试 seating.js 过程中没有定义 navigator 以及 eStr2 变量意义不清楚，(后话：最后发现其实这两个变量可以为空)那么对 seating.js 进行一番修改，把 seating-addone.js 的加密过程复制到 seating.js 中。</p>
+<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br></pre></td><td class="code"><pre><code class="hljs javaScript"><span class="hljs-keyword">const</span> mockNavigator = &#123; <span class="hljs-comment">// XXX 这个不清楚为什么可以定义为空</span><br>    <span class="hljs-comment">// userAgent: &#x27;Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36&#x27;,</span><br>    <span class="hljs-comment">// appCodeName: &#x27;Mozilla&#x27;,</span><br>    <span class="hljs-comment">// appVersion: &#x27;5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36&#x27;,</span><br>&#125;;<br><span class="hljs-comment">// 将模拟 navigator 对象分配给全局变量</span><br><span class="hljs-variable language_">global</span>.<span class="hljs-property">navigator</span> = mockNavigator;<br><br><span class="hljs-keyword">let</span> eStr2 = &#123;&#125; <span class="hljs-comment">// XXX 这个不知道为什么可以为空</span><br><span class="hljs-keyword">let</span> cookie = <span class="hljs-string">&quot;&quot;</span><br><span class="hljs-keyword">let</span> payloadString = <span class="hljs-string">&quot;&quot;</span><br><span class="hljs-keyword">const</span> fileName = <span class="hljs-string">&quot;&quot;</span><br><br><span class="hljs-keyword">let</span> hashValue = <span class="hljs-string">&quot;&quot;</span>;<br><span class="hljs-keyword">var</span> length = <span class="hljs-number">32</span>;<br><span class="hljs-keyword">var</span> hash_ptr = <span class="hljs-title class_">Module</span>.<span class="hljs-title function_">_malloc</span>(length);<br><span class="hljs-keyword">var</span> length2 = <span class="hljs-number">48</span>;<br><span class="hljs-keyword">var</span> ciphertext_ptr = <span class="hljs-title class_">Module</span>.<span class="hljs-title function_">_malloc</span>(length2);<br><span class="hljs-title class_">Module</span>.<span class="hljs-title function_">ccall</span>(<span class="hljs-string">&quot;gen&quot;</span>, <span class="hljs-string">&quot;void&quot;</span>, [<span class="hljs-string">&quot;string&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, <span class="hljs-string">&quot;string&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, <span class="hljs-string">&quot;number&quot;</span>, <span class="hljs-string">&quot;string&quot;</span>], [payloadString, hash_ptr, eStr2, ciphertext_ptr, length2, cookie]);<br><span class="hljs-keyword">var</span> hashtext_array = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint8Array</span>(<span class="hljs-title class_">Module</span>.<span class="hljs-property">HEAP8</span>.<span class="hljs-property">buffer</span>, hash_ptr, length);<br>hashValue = <span class="hljs-title function_">array2hex</span>(hashtext_array);<br><span class="hljs-title class_">Module</span>.<span class="hljs-title function_">_free</span>(hash_ptr);<br><span class="hljs-keyword">var</span> ciphertext_array = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint8Array</span>(<span class="hljs-title class_">Module</span>.<span class="hljs-property">HEAP8</span>.<span class="hljs-property">buffer</span>, ciphertext_ptr, length2);<br><span class="hljs-keyword">let</span> dataString = <span class="hljs-title function_">array2hex</span>(ciphertext_array);<br><span class="hljs-title class_">Module</span>.<span class="hljs-title function_">_free</span>(ciphertext_array);<br><br><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fs&#x27;</span>);<br><span class="hljs-keyword">const</span> content = <span class="hljs-string">&quot;hashValue: &quot;</span> + hashValue + <span class="hljs-string">&quot;\n&quot;</span> + <span class="hljs-string">&quot;dataString: &quot;</span> + dataString;<br><span class="hljs-comment">// const fileName = &quot;aaa.txt&quot;</span><br><span class="hljs-comment">// XXX 由于console.log() 被某机制进行了拦截，无法输出，只要保存到文件中进行查看结果 </span><br>fs.<span class="hljs-title function_">writeFileSync</span>(fileName, content);<br></code></pre></td></tr></table></figure>
+
+<p>既然在 Dev tools 上也无法输出，那么可以尝试一下把浏览器中的seating.js进行覆盖并打算断点。<br>然后把断点处的cookie, eStr2, payloadString, hashValue, dataString 的变量值进行复制，用于验证生成 aaa.txt 中的结果与断点处 hashValue, dataString 是否一致。</p>
+<p>验证过程省略(忘记截图了)，就此加密过程搞定</p>
+<h2 id="Python-中解决加密过程"><a href="#Python-中解决加密过程" class="headerlink" title="Python 中解决加密过程"></a>Python 中解决加密过程</h2><h3 id="尝试过程："><a href="#尝试过程：" class="headerlink" title="尝试过程："></a>尝试过程：</h3><h4 id="1、刚开始想通过-python-对-seating-wasm-进行加载然后将关键加密过程翻译为-python-无奈第一次接触-wasm-，失败告终。"><a href="#1、刚开始想通过-python-对-seating-wasm-进行加载然后将关键加密过程翻译为-python-无奈第一次接触-wasm-，失败告终。" class="headerlink" title="1、刚开始想通过 python 对 seating.wasm 进行加载然后将关键加密过程翻译为 python, 无奈第一次接触 wasm ，失败告终。"></a>1、刚开始想通过 python 对 seating.wasm 进行加载然后将关键加密过程翻译为 python, 无奈第一次接触 wasm ，失败告终。</h4><h4 id="2、尝试通过-python-对js相关函数进行调用-PyExecJS-框架-，无奈-seating-js-中对-seating-wasm-的加载过程用了很多-callback-看得头疼，失败告终。"><a href="#2、尝试通过-python-对js相关函数进行调用-PyExecJS-框架-，无奈-seating-js-中对-seating-wasm-的加载过程用了很多-callback-看得头疼，失败告终。" class="headerlink" title="2、尝试通过 python 对js相关函数进行调用( PyExecJS 框架)，无奈 seating.js 中对 seating.wasm 的加载过程用了很多 callback 看得头疼，失败告终。"></a>2、尝试通过 python 对js相关函数进行调用( PyExecJS 框架)，无奈 seating.js 中对 seating.wasm 的加载过程用了很多 callback 看得头疼，失败告终。</h4><h4 id="3、只能用回最笨的办法了，python中读取-seating-js-作为模板文件-然后在把-cookie-payloadString-进行替换并保存对应-对应-js-文件。最后-python-运行-node-hashjs-x2F-js-命令，由于-console-log-被拦截无奈只能把结果写入对应结果文件中了，最后-python-读取对应结果文件。"><a href="#3、只能用回最笨的办法了，python中读取-seating-js-作为模板文件-然后在把-cookie-payloadString-进行替换并保存对应-对应-js-文件。最后-python-运行-node-hashjs-x2F-js-命令，由于-console-log-被拦截无奈只能把结果写入对应结果文件中了，最后-python-读取对应结果文件。" class="headerlink" title="3、只能用回最笨的办法了，python中读取 seating.js(作为模板文件) 然后在把 cookie, payloadString 进行替换并保存对应 *(对应).js 文件。最后 python 运行 node hashjs&#x2F;*.js 命令，由于 console.log() 被拦截无奈只能把结果写入对应结果文件中了，最后 python 读取对应结果文件。"></a>3、只能用回最笨的办法了，python中读取 seating.js(作为模板文件) 然后在把 cookie, payloadString 进行替换并保存对应 *(对应).js 文件。最后 python 运行 node hashjs&#x2F;*.js 命令，由于 console.log() 被拦截无奈只能把结果写入对应结果文件中了，最后 python 读取对应结果文件。</h4><p>最后实现过程：</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br></pre></td><td class="code"><pre><code class="hljs Python"><span class="hljs-keyword">def</span> <span class="hljs-title function_">__getHashValue</span>(<span class="hljs-params">self, data</span>):<br>    js_path = <span class="hljs-string">&quot;hashjs/&quot;</span><br>    js_text = self.__readFile(<span class="hljs-string">&quot;seating2.js&quot;</span>)<br>    js_text = js_text.replace(<br>        <span class="hljs-string">&#x27;let payloadString = &quot;&quot;&#x27;</span>, <span class="hljs-string">&quot;let payloadString = &#x27;&quot;</span> + json.dumps(data) + <span class="hljs-string">&quot;&#x27;&quot;</span><br>    )<br>    js_text = js_text.replace(<br>        <span class="hljs-string">&#x27;let cookie = &quot;&quot;&#x27;</span>, <span class="hljs-string">&#x27;let cookie = &quot;&#x27;</span> + self.__dealCookie() + <span class="hljs-string">&#x27;&quot;&#x27;</span><br>    )<br>    <span class="hljs-comment"># js 运行结果文件</span><br>    result_filename = js_path + self.email_username + <span class="hljs-string">&quot;.txt&quot;</span>  <span class="hljs-comment"># </span><br>    js_text = js_text.replace(<br>        <span class="hljs-string">&#x27;const fileName = &quot;&quot;&#x27;</span>, <span class="hljs-string">&#x27;const fileName = &quot;&#x27;</span> + result_filename + <span class="hljs-string">&#x27;&quot;&#x27;</span><br>    )<br>    <br>    js_filename = js_path + self.email_username + <span class="hljs-string">&quot;.js&quot;</span><br>    self.__writeFile(js_filename, js_text)<br>    cmd = <span class="hljs-string">&quot;node &quot;</span> + js_filename<br>    self.__execCmd(cmd) <span class="hljs-comment"># node 命令运行 js 文件</span><br><br>    <span class="hljs-comment"># result_filename = js_path + result_filename</span><br>    result = self.__readFile(result_filename)<br>    self.logging.info(<span class="hljs-string">&quot;js_result: &quot;</span> + <span class="hljs-built_in">str</span>(result))<br>    result = result.split(<span class="hljs-string">&quot;: &quot;</span>)<br>    <span class="hljs-built_in">hash</span> = result[<span class="hljs-number">1</span>].replace(<span class="hljs-string">&quot;\ndataString&quot;</span>, <span class="hljs-string">&quot;&quot;</span>)<br>    data_str = result[<span class="hljs-number">2</span>]<br>    <span class="hljs-keyword">return</span> <span class="hljs-built_in">hash</span>, data_str<br></code></pre></td></tr></table></figure>
+
+<h2 id="结束语"><a href="#结束语" class="headerlink" title="结束语"></a>结束语</h2><p>就此更新完成，至于 seating.wasm 文件，后经了解，由 C&#x2F;C++ 编写与编译完成的。<br>经过一番搜索，wabt(<a target="_blank" rel="noopener" href="https://github.com/WebAssembly/wabt">https://github.com/WebAssembly/wabt</a>) 可以反编译 wasm文件。<br>通过 wabt 反编译后，看了半天(没看懂)。<br>但是看到别人调试 wasm 文件过程：(但是没尝试)</p>
+<ol>
+<li><a target="_blank" rel="noopener" href="https://www.cnblogs.com/luocodes/p/14006078.html">https://www.cnblogs.com/luocodes/p/14006078.html</a></li>
+<li><a target="_blank" rel="noopener" href="https://www.anquanke.com/post/id/254427">https://www.anquanke.com/post/id/254427</a></li>
+</ol>
+<p>虽然没弄懂 wasm 中的具体加密手段，但是最后 python 的爬虫程序是能成功运行的。</p>
+
+              
+            </div>
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>关于某票务平台-爬虫-2</div>
+      <div>https://tiansenwang.github.io/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-2/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>wts</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2024年8月25日</div>
+        </div>
+      
+      
+      <div class="license-meta-item">
+        <div>许可协议</div>
+        <div>
+          
+            
+            
+              <a target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+              <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                <i class="iconfont icon-by"></i>
+              </span>
+              </a>
+            
+          
+        </div>
+      </div>
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2024/08/25/%E5%85%B3%E4%BA%8E%E6%9F%90%E7%A5%A8%E5%8A%A1%E5%B9%B3%E5%8F%B0-%E7%88%AC%E8%99%AB-1/" title="关于某票务平台-爬虫-1">
+                        <span class="hidden-mobile">关于某票务平台-爬虫-1</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header"><i class="iconfont icon-list"></i>&nbsp;目录</p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.0/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.18.0/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      headingSelector : CONFIG.toc.headingSelector || 'h1,h2,h3,h4,h5,h6',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      collapseDepth   : CONFIG.toc.collapseDepth || 0,
+      scrollSmooth    : true,
+      headingsOffset  : -boardTop
+    });
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+  });
+</script>
+
+
+  <script>
+  (function() {
+    var enableLang = CONFIG.code_language.enable && CONFIG.code_language.default;
+    var enableCopy = CONFIG.copy_btn;
+    if (!enableLang && !enableCopy) {
+      return;
+    }
+
+    function getBgClass(ele) {
+      return Fluid.utils.getBackgroundLightness(ele) >= 0 ? 'code-widget-light' : 'code-widget-dark';
+    }
+
+    var copyTmpl = '';
+    copyTmpl += '<div class="code-widget">';
+    copyTmpl += 'LANG';
+    copyTmpl += '</div>';
+    jQuery('.markdown-body pre').each(function() {
+      var $pre = jQuery(this);
+      if ($pre.find('code.mermaid').length > 0) {
+        return;
+      }
+      if ($pre.find('span.line').length > 0) {
+        return;
+      }
+
+      var lang = '';
+
+      if (enableLang) {
+        lang = CONFIG.code_language.default;
+        if ($pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2 && $pre.children().hasClass('hljs')) {
+          lang = $pre[0].children[0].classList[1];
+        } else if ($pre[0].getAttribute('data-language')) {
+          lang = $pre[0].getAttribute('data-language');
+        } else if ($pre.parent().hasClass('sourceCode') && $pre[0].children.length > 0 && $pre[0].children[0].classList.length >= 2) {
+          lang = $pre[0].children[0].classList[1];
+          $pre.parent().addClass('code-wrapper');
+        } else if ($pre.parent().hasClass('markdown-body') && $pre[0].classList.length === 0) {
+          $pre.wrap('<div class="code-wrapper"></div>');
+        }
+        lang = lang.toUpperCase().replace('NONE', CONFIG.code_language.default);
+      }
+      $pre.append(copyTmpl.replace('LANG', lang).replace('code-widget">',
+        getBgClass($pre[0]) + (enableCopy ? ' code-widget copy-btn" data-clipboard-snippet><i class="iconfont icon-copy"></i>' : ' code-widget">')));
+
+      if (enableCopy) {
+        Fluid.utils.createScript('https://lib.baomitu.com/clipboard.js/2.0.10/clipboard.min.js', function() {
+          var clipboard = new window.ClipboardJS('.copy-btn', {
+            target: function(trigger) {
+              var nodes = trigger.parentNode.childNodes;
+              for (var i = 0; i < nodes.length; i++) {
+                if (nodes[i].tagName === 'CODE') {
+                  return nodes[i];
+                }
+              }
+            }
+          });
+          clipboard.on('success', function(e) {
+            e.clearSelection();
+            e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-copy', 'icon-success');
+            setTimeout(function() {
+              e.trigger.innerHTML = e.trigger.innerHTML.replace('icon-success', 'icon-copy');
+            }, 2000);
+          });
+        });
+      }
+    });
+  })();
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/4.3.1/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
